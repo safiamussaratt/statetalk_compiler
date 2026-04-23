@@ -14,7 +14,7 @@ state SizeQuestion {
     prompt "2 = Medium ($15)"
     prompt "3 = Large ($20)"
     store input as $size (str)
-    
+
     if $size == "1" {
         set $price = 10
         set $size_name = "Small"
@@ -41,7 +41,7 @@ state ToppingsQuestion {
     prompt "Great! A {$size_name} pizza is ${$price}."
     prompt "Would you like extra cheese? (yes/no)"
     store input as $extra_cheese (str)
-    
+
     if $extra_cheese == "yes" {
         set $price = $price + 2
         set $has_cheese = "true"
@@ -51,7 +51,7 @@ state ToppingsQuestion {
         set $has_cheese = "false"
     }
     end
-    
+
     goto Confirmation
 }
 
@@ -59,16 +59,16 @@ state Confirmation {
     prompt "--- Order Summary ---"
     prompt "Name: {$name}"
     prompt "Size: {$size_name}"
-    
+
     if $has_cheese == "true" {
         prompt "Extra cheese: Yes"
     }
     end
-    
+
     prompt "Total: ${$price}"
     prompt "Confirm order? (yes/no)"
     store input as $confirm (str)
-    
+
     if $confirm == "yes" {
         prompt "Order placed! Thank you, {$name}!"
         goto EndOrder
@@ -83,13 +83,13 @@ state Confirmation {
 state EndOrder {
     prompt "Would you like to order another pizza? (yes/no)"
     store input as $again (str)
-    
+
     if $again == "yes" {
         goto SizeQuestion
     }
     else {
         prompt "Thanks for visiting PizzaBot! Goodbye!"
-        set $current_state = "END"
+        goto END
     }
     end
 }
