@@ -9,12 +9,6 @@ A domain-specific language (DSL) compiler for creating text-based chatbots using
 
 **StateTalk** is a high-level language designed to simplify chatbot development through intuitive state-based dialogue flows. Write conversation logic in a clean, readable syntax, and the compiler generates executable Python code.
 
-## Compile and run:
-
-```bash
-python compiler.py example.st
-python example_bot.py
-```
 ## Architecture
 ```
 statetalk_compiler/
