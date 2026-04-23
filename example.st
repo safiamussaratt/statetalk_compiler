@@ -1,4 +1,4 @@
-# Pizza Order Bot - CS4031 Example
+# Pizza Order Bot 
 # This demonstrates StateTalk language features
 
 state Welcome {
