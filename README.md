@@ -33,7 +33,7 @@ statetalk_compiler/
 1. Clone the repository:
 ```bash
 git clone https://github.com/safiamussaratt/statetalk_compiler.git
-cd statetalk
+cd statetalk_compiler
 ```
 
 2. Install dependencies:
