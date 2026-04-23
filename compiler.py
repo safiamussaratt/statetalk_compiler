@@ -1,8 +1,3 @@
-"""
-StateTalk Compiler - CS4031 Course Project
-Converts .st (StateTalk) files into executable Python chatbot code
-"""
-
 import ply.lex as lex
 import ply.yacc as yacc
 import sys
@@ -41,19 +36,28 @@ reserved = {
     'as': 'AS',
 }
 
-# Token regex rules
+# Token regex rules - simple ones
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
-t_EQ = r'='
-t_EQEQ = r'=='
-t_NOTEQ = r'!='
 t_LT = r'<'
 t_GT = r'>'
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_COMMA = r','
+
+def t_EQEQ(t):
+    r'=='
+    return t
+
+def t_NOTEQ(t):
+    r'!='
+    return t
+
+def t_EQ(t):
+    r'='
+    return t
 
 # Ignored characters (spaces and tabs)
 t_ignore = ' \t'
@@ -185,9 +189,9 @@ def p_store_stmt(p):
     if len(p) == 5:
         p[0] = StoreStmt(p[4], None)
     elif len(p) == 8:
-        p[0] = StoreStmt(p[5], p[7])
+        p[0] = StoreStmt(p[4], p[6])
     else:
-        p[0] = StoreStmt(p[5], None)
+        p[0] = StoreStmt(p[4], None)
 
 def p_goto_stmt(p):
     '''goto_stmt : GOTO IDENTIFIER'''
@@ -350,11 +354,13 @@ class CodeGenerator:
     def generate_statement(self, stmt):
         """Generate code for a single statement"""
         if isinstance(stmt, PromptStmt):
-            # Handle variable interpolation in strings
             message = stmt.message
-            # Simple interpolation: replace {$var} with {self.vars.get('var', '')}
             import re
-            interpolated = re.sub(r'\{\s*\$(\w+)\s*\}', r'{self.vars.get("\1", "")}', message)
+            interpolated = re.sub(
+                r'\{\$(\w+)\}',
+                lambda m: '{self.vars.get("' + m.group(1) + '", "")}',
+                message
+            )
             self.emit(f'print(f"{interpolated}")')
             
         elif isinstance(stmt, StoreStmt):
@@ -366,7 +372,7 @@ class CodeGenerator:
                 self.indent_level += 1
                 self.emit(f'try:')
                 self.indent_level += 1
-                self.emit(f'{var_name}_input = input("> ")')
+                self.emit(f'{var_name}_input = input("> ").strip()')
                 self.emit(f'self.vars["{var_name}"] = int({var_name}_input)')
                 self.emit(f'break')
                 self.indent_level -= 1
@@ -376,9 +382,11 @@ class CodeGenerator:
                 self.indent_level -= 1
                 self.indent_level -= 1
             elif stmt.var_type == 'str':
-                self.emit(f'self.vars["{var_name}"] = input("> ")')
+                # FIX 3: .strip() removes trailing \r on Windows and any
+                # accidental whitespace so string comparisons work correctly.
+                self.emit(f'self.vars["{var_name}"] = input("> ").strip()')
             else:
-                self.emit(f'self.vars["{var_name}"] = input("> ")')
+                self.emit(f'self.vars["{var_name}"] = input("> ").strip()')
                 
         elif isinstance(stmt, GotoStmt):
             self.emit(f'self.current_state = "{stmt.target}"')
@@ -425,7 +433,6 @@ class CodeGenerator:
                 self.indent_level -= 1
                 
         elif isinstance(stmt, CallStmt):
-            # Generate arguments without extra quotes for variables
             args_list = []
             for arg in stmt.args:
                 if isinstance(arg, str) and arg.startswith('$'):
@@ -446,13 +453,11 @@ class CodeGenerator:
             func_name = stmt.function
             
             self.emit(f'# Calling API: {func_name}({args_str})')
-            # Use string concatenation to avoid nested quote issues
             self.emit(f'print("[Simulating API call: {func_name}(" + str({args_str}) + ")]")')
     
     def generate_expression(self, expr):
         """Convert expression AST to Python code string"""
         if isinstance(expr, str):
-            # Check if it's a variable (starts with $)
             if expr.startswith('$'):
                 var_name = expr[1:]
                 return f'self.vars.get("{var_name}", "")'
