@@ -32,7 +32,7 @@ statetalk_compiler/
 ### Setup
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/statetalk.git
+git clone https://github.com/safiamussaratt/statetalk.git
 cd statetalk
 ```
 
